@@ -9,10 +9,13 @@ const loginRoutes = require("./router/login");
 const errorHandler = require("./middleware/errorHandler");
 const logger = require("./middleware/logger");
 const { isAuthorized, isTeacher } = require("./middleware/authorized");
-
+//env variables
+const dbURL =
+  process.env.DATABASE_URL || "mongodb://localhost:27017/nurserySystem";
+const port = process.env.PORT || 8080;
 //initalizing
 mongoose
-  .connect("mongodb://localhost:27017/nurserySystem")
+  .connect(dbURL)
   .then(() => {
     console.log("connected to db");
     app.listen(port, () => {
@@ -35,6 +38,5 @@ app.use(teachersRouter);
 app.use(childRoutes);
 app.use(classRoutes);
 app.use(errorHandler);
-const port = process.env.PORT || 8080;
 
 //start the server

@@ -16,19 +16,20 @@ const isAuthorized = (req, res, next) => {
   }
 };
 
-const isTeacher = (req, res, next) => {
-  if (req.role === "teacher") {
+const isTeacher = (req, _res, next) => {
+  let token = req.get("authorization");
+  const decoded = jwt.verify(token.split(" ")[1], process.env.JWT_SECRET);
+  req.user = decoded.user;
+  if (decoded.role === "admin") {
     next();
   } else {
-    next(new Error("Unauthorized, teacher only"));
+    next(new Error("Unauthorized, admin only"));
   }
 };
 
-const isAdmin = (req, res, next) => {
+const isAdmin = (req, _res, next) => {
   let token = req.get("authorization");
-  // console.log(token);
   const decoded = jwt.verify(token.split(" ")[1], process.env.JWT_SECRET);
-  // console.log("decoded", decoded);
   req.user = decoded.user;
   if (decoded.role === "admin") {
     next();

@@ -1,17 +1,16 @@
-// login middleware using mongoose
+const bcrypt = require("bcrypt");
 const teachers = require("../model/teacherSchema");
 const jwt = require("jsonwebtoken");
 module.exports = (req, res, next) => {
-  console.log("ghere");
   const { email, password } = req.body;
-
-  // Find the teacher by email
   teachers
-    .findOne({ email, password })
+    .findOne({ email })
     .then((teacher) => {
-      if (!teacher) {
+      const passwordMatch = bcrypt.compareSync(password, teacher.password);
+      if (!teacher || !passwordMatch) {
         throw new Error("Invalid email or password");
       }
+
       req.teacher = {
         _id: teacher._id,
         email: teacher.email,

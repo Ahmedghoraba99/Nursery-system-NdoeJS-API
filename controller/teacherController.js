@@ -1,5 +1,6 @@
 const teachers = require("../model/teacherSchema");
-
+const bcrypt = require("bcrypt");
+const salt = parseInt(process.env.SALT);
 const getAllTeachers = (_req, res, next) => {
   teachers
     .find({})
@@ -31,20 +32,25 @@ const getTeacher = (req, res, next) => {
 };
 
 const addTeacher = (req, res, next) => {
-  // teachers.init();
-  const newTeacher = new teachers(req.body);
-
-  newTeacher
-    .save()
-    .then(() => {
-      res.status(201).json({
-        status: "success",
-        message: "Teacher added successfully",
-      });
-    })
-    .catch((err) => {
+  bcrypt.hash(req.body.password, salt, (err, hash) => {
+    if (err) {
       next(err);
-    });
+      return;
+    }
+    req.body.password = hash;
+    const newTeacher = new teachers(req.body);
+    newTeacher
+      .save()
+      .then(() => {
+        res.status(201).json({
+          status: "success",
+          message: "Teacher added successfully",
+        });
+      })
+      .catch((err) => {
+        next(err);
+      });
+  });
 };
 
 const updateTeacher = (req, res, next) => {
