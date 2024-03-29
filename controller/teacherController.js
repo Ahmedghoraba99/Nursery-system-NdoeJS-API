@@ -16,7 +16,6 @@ const getAllTeachers = (_req, res, next) => {
 };
 
 const getTeacher = (req, res, next) => {
-  console.log("_id", req.params.id);
   teachers
     .findById(req.params.id)
     .then((data) => {
@@ -24,7 +23,6 @@ const getTeacher = (req, res, next) => {
         status: "success",
         data: data,
       });
-      //test
     })
     .catch((err) => {
       next(err + "teacher controleer");

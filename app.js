@@ -2,10 +2,11 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const dot_env = require("dotenv").config();
+const bodyParser = require("body-parser");
 const teachersRouter = require("./router/teacherRoutes");
 const childRoutes = require("./router/childRoutes");
 const classRoutes = require("./router/classRoutes");
-const loginRoutes = require("./router/login");
+const loginRoutes = require("./router/loginAndRegister");
 const errorHandler = require("./middleware/errorHandler");
 const logger = require("./middleware/logger");
 const { isAuthorized, isTeacher } = require("./middleware/authorized");
@@ -27,16 +28,17 @@ mongoose
   });
 
 const app = express();
+//parsers
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(express.urlencoded({ extended: true })); //img
 //auth layers
 app.use("/teachers", isAuthorized);
 
-app.use(logger);
+app.use(logger); //top level logger
 app.use(loginRoutes);
 app.use(teachersRouter);
 app.use(childRoutes);
 app.use(classRoutes);
-app.use(errorHandler);
+app.use(errorHandler); //top level error handler
 
 //start the server

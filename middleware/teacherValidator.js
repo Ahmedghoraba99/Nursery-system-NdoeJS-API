@@ -5,7 +5,7 @@ const insertValidator = [
   body("fullname")
     .isLength({ min: 3 })
     .withMessage("name should be a string and > 3 chars"),
-  body("password").isString({ min: 6 }).withMessage("min length =6"),
+  body("password").isString().isLength({ min: 6 }).withMessage("min length =6"),
   body("email")
     .isEmail()
     .withMessage("check the email format")
@@ -19,7 +19,7 @@ const insertValidator = [
         throw new Error("email already exists");
       }
     }),
-  body("image").isURL().withMessage("Please provide a valid image url"),
+  body("image").isString().withMessage("Please provide a valid image url"),
 ];
 const updateValidator = [
   body("id").isMongoId(), //because it's of type hexaDecimal....

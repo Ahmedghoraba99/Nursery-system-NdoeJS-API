@@ -1,17 +1,16 @@
 const { validationResult } = require("express-validator");
-module.exports = (req, res, next) => {
+module.exports = (req, _res, next) => {
   let result = validationResult(req);
-
-  // console.log(result);
-  if (result.errors.length > 0) {
-    // console.log(result.errors);
-    // console.log("herehere");
-    let errorMsg = result.errors.reduce(
-      (current, item) => current + item.msg + " : ",
-      ""
-    );
+  console.log("Validation Result:", result); // Add this line for logging
+  if (!result.isEmpty()) {
+    let errorMsg = result
+      .array()
+      .map((error) => error.msg)
+      .join(" : ");
     let error = new Error(errorMsg);
     error.status = 422;
     next(error);
-  } else next();
+  } else {
+    next();
+  }
 };
