@@ -9,7 +9,7 @@ const insertValidator = [
   body("email")
     .isEmail()
     .withMessage("check the email format")
-    .custom(async (value, { req }) => {
+    .custom(async (value, { _req }) => {
       try {
         const teacher = await teachers.findOne({ email: value });
         if (teacher) {
@@ -19,7 +19,10 @@ const insertValidator = [
         throw new Error("email already exists");
       }
     }),
-  body("image").isString().withMessage("Please provide a valid image url"),
+  // body("image")
+  //   .optional()
+  //   .isString()
+  //   .withMessage("Please provide a valid image"),
 ];
 const updateValidator = [
   body("id").isMongoId(), //because it's of type hexaDecimal....
@@ -38,7 +41,7 @@ const updateValidator = [
           }
         });
     }),
-  body("image").optional().isURL(),
+  body("image").optional().isString(),
 ];
 
 module.exports = {

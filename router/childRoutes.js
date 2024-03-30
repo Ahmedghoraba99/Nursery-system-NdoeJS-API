@@ -17,41 +17,21 @@ const router = express.Router();
 
 router
   .route("/child")
-  .get(logger, getAllStudents, notFound, errorHandler)
-  .post(
-    logger,
-    studentValidator.insertValidator,
-    validatorResults,
-    addStudent,
-    notFound,
-    errorHandler
-  )
-  .patch(
-    logger,
-    studentValidator.updateValidator,
-    validatorResults,
-    updateStudent,
-    notFound,
-    errorHandler
-  );
+  .get(getAllStudents)
+  .post(studentValidator.insertValidator, validatorResults, addStudent)
+  .patch(studentValidator.updateValidator, validatorResults, updateStudent);
 
+router
+  .route("/child/:id/updateimg")
+  .patch(studentValidator.idValidator, validatorResults, updateStudent);
 router
   .route("/child/:id")
   .get(
-    logger,
     studentValidator.idValidator,
+    studentValidator.updateValidator,
     validatorResults,
-    getStudent,
-    notFound,
-    errorHandler
+    getStudent
   )
-  .delete(
-    logger,
-    studentValidator.idValidator,
-    validatorResults,
-    deleteStudent,
-    notFound,
-    errorHandler
-  );
+  .delete(studentValidator.idValidator, validatorResults, deleteStudent);
 
 module.exports = router;

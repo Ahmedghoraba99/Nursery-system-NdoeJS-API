@@ -1,9 +1,5 @@
 const express = require("express");
 const teacherValidator = require("../middleware/teacherValidator");
-const logger = require("../middleware/logger");
-const errorHandler = require("../middleware/errorHandler");
-const notFound = require("../middleware/notFound");
-const authorization = require("../middleware/authorized");
 const {
   getAllTeachers,
   addTeacher,
@@ -12,58 +8,38 @@ const {
   deleteTeacher,
 } = require("../controller/teacherController");
 const validatorResults = require("../middleware/validatorResults");
+const { upload, saveImageIfExists } = require("../middleware/uploadImg");
+const { sameID } = require("../middleware/authorized");
 const router = express.Router();
 
 router
   //GET All teachers
   .route("/teachers")
-  .get(logger, getAllTeachers, notFound, errorHandler)
+  .get(getAllTeachers)
   //Add teacher
-  .post(
-    logger,
-    teacherValidator.insertValidator,
-    validatorResults,
-    addTeacher,
-    notFound,
-    errorHandler
-  )
+  .post(teacherValidator.insertValidator, validatorResults, addTeacher)
   //Update teacher
-  .patch(
-    logger,
-    teacherValidator.updateValidator,
-    validatorResults,
-    updateTeacher,
-    notFound,
-    errorHandler
-  );
+  .patch(teacherValidator.updateValidator, validatorResults, updateTeacher);
 
+router
+  .route("/teachers/:id/updateimg")
+  .patch(
+    sameID,
+    upload.single("image"),
+    saveImageIfExists,
+    teacherValidator.idValidator,
+    validatorResults,
+    updateTeacher
+  );
+router
+  .route("/teachers/:id/changepassword")
+  .patch(sameID, teacherValidator.idValidator, validatorResults, updateTeacher);
 router
   .route("/teachers/:id")
   //Get teacher by id
-  .get(
-    logger,
-    teacherValidator.idValidator,
-    validatorResults,
-    getTeacher,
-    notFound,
-    errorHandler
-  )
+  .get(teacherValidator.idValidator, validatorResults, getTeacher)
   // Delete teacher by id
-  .delete(
-    logger,
-    teacherValidator.idValidator,
-    validatorResults,
-    deleteTeacher,
-    notFound,
-    errorHandler
-  )
-  .patch(
-    logger,
-    teacherValidator.idValidator,
-    validatorResults,
-    updateTeacher,
-    notFound,
-    errorHandler
-  );
+  .delete(teacherValidator.idValidator, validatorResults, deleteTeacher)
+  .patch(teacherValidator.idValidator, validatorResults, updateTeacher);
 
 module.exports = router;

@@ -21,6 +21,7 @@ const childSchema = new mongoose.Schema(
       required: true,
     },
     address: addressSchema,
+    image: { type: String, required: true },
   },
   { _id: false }
 );

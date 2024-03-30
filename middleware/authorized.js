@@ -20,10 +20,10 @@ const isTeacher = (req, _res, next) => {
   let token = req.get("authorization");
   const decoded = jwt.verify(token.split(" ")[1], process.env.JWT_SECRET);
   req.user = decoded.user;
-  if (decoded.role === "admin") {
+  if (decoded.role === "teacher" || decoded.role === "admin") {
     next();
   } else {
-    next(new Error("Unauthorized, admin only"));
+    next(new Error("Unauthorized, teacher only"));
   }
 };
 
@@ -37,4 +37,15 @@ const isAdmin = (req, _res, next) => {
     next(new Error("Unauthorized, admin only"));
   }
 };
-module.exports = { isAuthorized, isTeacher, isAdmin };
+
+const sameID = (req, _res, next) => {
+  let token = req.get("authorization");
+  const decoded = jwt.verify(token.split(" ")[1], process.env.JWT_SECRET);
+  req.user = decoded.user;
+  if (req.user.id === req.params.id) {
+    next();
+  } else {
+    next(new Error("Unauthorized, you can only edit your own account"));
+  }
+};
+module.exports = { isAuthorized, isTeacher, isAdmin, sameID };
