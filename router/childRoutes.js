@@ -1,10 +1,5 @@
 const express = require("express");
 const studentValidator = require("../middleware/childValidator");
-// const teacherController = require("../controller/teacherController");
-const logger = require("../middleware/logger");
-const errorHandler = require("../middleware/errorHandler");
-const notFound = require("../middleware/notFound");
-// const isAuthorized = require("../middleware/authorized").isAuthorized;
 const {
   getAllStudents,
   addStudent,
@@ -13,17 +8,37 @@ const {
   deleteStudent,
 } = require("../controller/childController");
 const validatorResults = require("../middleware/validatorResults");
+const { upload, saveImageIfExists } = require("../middleware/uploadImg");
+const { isAdmin } = require("../middleware/authorized");
 const router = express.Router();
-
+router.use("/child", isAdmin);
 router
   .route("/child")
   .get(getAllStudents)
-  .post(studentValidator.insertValidator, validatorResults, addStudent)
-  .patch(studentValidator.updateValidator, validatorResults, updateStudent);
+  .post(
+    upload.single("image"),
+    studentValidator.insertValidator,
+    validatorResults,
+    saveImageIfExists,
+    addStudent
+  )
+  .patch(
+    upload.single("image"),
+    studentValidator.updateValidator,
+    validatorResults,
+    updateStudent,
+    saveImageIfExists
+  );
 
 router
   .route("/child/:id/updateimg")
-  .patch(studentValidator.idValidator, validatorResults, updateStudent);
+  .patch(
+    upload.single("image"),
+    saveImageIfExists,
+    studentValidator.idValidator,
+    validatorResults,
+    updateStudent
+  );
 router
   .route("/child/:id")
   .get(

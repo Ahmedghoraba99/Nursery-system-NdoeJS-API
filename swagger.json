@@ -1,0 +1,774 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Nursery system API",
+    "description": "A simple API with two layers of access, JWT for authorization, bcrypt for hashing passwords, mongodb for storing data, multer for file uploads, and swagger for documentation.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Teachers",
+      "description": "Operations about teachers mostly admin only "
+    },
+    {
+      "name": "Children",
+      "description": "Operations about children all admin only"
+    },
+    {
+      "name": "Login/Registration",
+      "description": "Operations about login/registration"
+    }
+  ],
+  "paths": {
+    "/teachers": {
+      "get": {
+        "summary": "Get teachers (admin only)",
+        "tags": ["Teachers"],
+        "description": "Retrieve a list of teachers",
+        "responses": {
+          "200": {
+            "description": "A list of teachers",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Add a new teacher (admin only)",
+        "tags": ["Teachers"],
+        "description": "Add a new teacher to the system",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fullname": {
+                    "type": "string",
+                    "description": "The name of the teacher"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "The email address of the teacher"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "description": "The password of the teacher > 6 characters",
+                    "minLength": 6
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": ["teacher", "admin"],
+                    "description": "The role of the teacher",
+                    "default": "teacher"
+                  },
+                  "image": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "The image of the teacher"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Teacher created successfully"
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/teachers/{id}": {
+      "get": {
+        "summary": "Get teacher by ID (admin / sameID)",
+        "tags": ["Teachers"],
+        "description": "Retrieve a teacher by their unique ID ",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The ID of the teacher (MongoDB ObjectId)",
+            "schema": {
+              "type": "string",
+              "readOnly": false,
+              "example": "65feb86021ea6254cca0084d"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "404": {
+            "description": "Teacher not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete teacher by ID (admin only)",
+        "tags": ["Teachers"],
+        "description": "deletes a teacher by their unique ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The ID of the teacher (MongoDB ObjectId)",
+            "schema": {
+              "type": "string",
+              "readOnly": false,
+              "example": "65feb86021ea6254cca0084d"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "404": {
+            "description": "Teacher not found"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update teacher by ID (admin only)",
+        "tags": ["Teachers"],
+        "description": "Update an existing teacher by their unique ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The ID of the teacher",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fullname": {
+                    "type": "string",
+                    "description": "The name of the teacher"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "The email address of the teacher"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "description": "The password of the teacher > 6 characters",
+                    "minLength": 6
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": ["teacher", "admin"],
+                    "description": "The role of the teacher",
+                    "default": "teacher"
+                  },
+                  "image": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "The image of the teacher"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "404": {
+            "description": "Teacher not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "summary": "Login",
+        "description": "Authenticate and receive a bearer token",
+        "tags": ["Login/Registration"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "The email address of the teacher (already registered in the DB)"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "minLength": 6,
+                    "description": "The password"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful login",
+            "headers": {
+              "Authorization": {
+                "schema": {
+                  "type": "string",
+                  "description": "Bearer token for authentication"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/register": {
+      "post": {
+        "summary": "Register",
+        "description": "Register a new user",
+        "tags": ["Login/Registration"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fullname": {
+                    "type": "string",
+                    "description": "The name of the teacher"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "The email address of the teacher"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "description": "The password of the teacher > 6 characters",
+                    "minLength": 6
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": ["teacher", "admin"],
+                    "description": "The role of the teacher",
+                    "default": "teacher"
+                  },
+                  "image": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "The image of the teacher"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User registered successfully"
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/child": {
+      "get": {
+        "summary": "Get children",
+        "description": "Retrieve a list of children",
+        "tags": ["Children"],
+        "responses": {
+          "200": {
+            "description": "A list of children",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Add a new child",
+        "description": "Add a new child to the system",
+        "tags": ["Children"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Child"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Child created successfully"
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/child/{id}": {
+      "get": {
+        "summary": "Get child by ID",
+        "description": "Retrieve a child by ID",
+        "tags": ["Children"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The ID of the child",
+            "schema": {
+              "type": "integer",
+              "example": 5
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Child found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Child"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Child not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update child by ID",
+        "description": "Update a child's information by ID",
+        "tags": ["Children"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The ID of the child",
+            "schema": {
+              "type": "integer",
+              "example": 5
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Child"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Child updated successfully"
+          },
+          "404": {
+            "description": "Child not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete child by ID",
+        "description": "Delete a child by ID",
+        "tags": ["Children"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The ID of the child",
+            "schema": {
+              "type": "integer",
+              "example": 5
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Child deleted successfully"
+          },
+          "404": {
+            "description": "Child not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/class": {
+      "get": {
+        "summary": "Get classes",
+        "description": "Retrieve a list of classes",
+        "tags": ["Classes"],
+        "responses": {
+          "200": {
+            "description": "A list of classes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Class"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Add a new class",
+        "description": "Add a new class to the system",
+        "tags": ["Classes"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Class"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/class/{id}": {
+      "get": {
+        "summary": "Get class by ID",
+        "description": "Retrieve a class by ID",
+        "tags": ["Classes"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The ID of the class",
+            "schema": {
+              "type": "integer",
+              "example": 5
+            }
+          }
+        ]
+      },
+      "delete": {
+        "summary": "Delete class by ID",
+        "description": "Delete a class by ID",
+        "tags": ["Classes"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The ID of the class",
+            "schema": {
+              "type": "integer",
+              "example": 5
+            }
+          }
+        ]
+      },
+      "patch": {
+        "summary": "Update class by ID",
+        "description": "Update a class's information by ID",
+        "tags": ["Classes"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The ID of the class",
+            "schema": {
+              "type": "integer",
+              "example": 5
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "schema": {
+                  "$ref": "#/components/schemas/Class"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Class updated successfully"
+          },
+          "404": {
+            "description": "Class not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/class/teacher/{id}": {
+      "get": {
+        "summary": "Get class supervisor info",
+        "description": "Retrieve the information of the class supervisor",
+        "tags": ["Classes"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The ID of the class",
+            "schema": {
+              "type": "integer",
+              "example": 5
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Teacher found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Teacher"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Teacher not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/class/children/{id}": {
+      "get": {
+        "summary": "Get class children",
+        "description": "Retrieve the list of children in a class",
+        "tags": ["Classes"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The ID of the class",
+            "schema": {
+              "type": "integer",
+              "example": 5
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Children found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Child"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "components": {
+    "schemas": {
+      "Child": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "The unique identifier of the child"
+          },
+          "fullName": {
+            "type": "string",
+            "description": "The name of the child"
+          },
+          "age": {
+            "type": "integer",
+            "description": "The age of the child"
+          },
+          "image": {
+            "type": "string",
+            "format": "binary",
+            "description": "The image of the child"
+          },
+          "level": {
+            "type": "string",
+            "enum": ["KG2", "KG1", "PreKG"],
+            "description": "The level of the child"
+          },
+          "address[street]": {
+            "type": "string",
+            "description": "The street of the child's address"
+          },
+          "address[city]": {
+            "type": "string",
+            "description": "The city of the child's address"
+          },
+          "address[building]": {
+            "type": "integer",
+            "description": "The building number of the child's address"
+          }
+        }
+      },
+      "Teacher": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "The unique identifier of the teacher"
+          },
+          "fullname": {
+            "type": "string",
+            "description": "The name of the teacher"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "The email address of the teacher (already registered in the DB)"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "description": "The password of the teacher > 6 characters",
+            "minLength": 6
+          },
+          "role": {
+            "type": "string",
+            "enum": ["teacher", "admin"],
+            "description": "The role of the teacher",
+            "default": "teacher"
+          },
+          "image": {
+            "type": "string",
+            "format": "binary",
+            "description": "The image of the teacher"
+          }
+        }
+      },
+      "Class": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "integer",
+            "description": "The unique identifier of the class",
+            "example": "6"
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the class",
+            "example": "Math"
+          },
+          "supervisor": {
+            "type": "string",
+            "description": "The MongoDB ObjectID of the class supervisor (teacher)",
+            "format": "objectId",
+            "example": "6274c5c112e2260d84809d"
+          },
+          "children": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "description": "The unique identifier of the child"
+            },
+            "example": [32, 33]
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

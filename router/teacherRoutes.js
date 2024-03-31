@@ -17,27 +17,29 @@ router
   .route("/teachers")
   .get(getAllTeachers)
   //Add teacher
-  .post(teacherValidator.insertValidator, validatorResults, addTeacher)
-  //Update teacher
-  .patch(teacherValidator.updateValidator, validatorResults, updateTeacher);
-
-router
-  .route("/teachers/:id/updateimg")
-  .patch(
-    sameID,
+  .post(
     upload.single("image"),
-    saveImageIfExists,
-    teacherValidator.idValidator,
+    teacherValidator.insertValidator,
     validatorResults,
+    saveImageIfExists,
+    addTeacher
+  )
+  //Update teacher
+  .patch(
+    upload.single("image"),
+    teacherValidator.updateValidator,
+    validatorResults,
+    saveImageIfExists,
     updateTeacher
   );
+
 router
   .route("/teachers/:id/changepassword")
   .patch(sameID, teacherValidator.idValidator, validatorResults, updateTeacher);
 router
   .route("/teachers/:id")
   //Get teacher by id
-  .get(teacherValidator.idValidator, validatorResults, getTeacher)
+  .get(sameID, teacherValidator.idValidator, validatorResults, getTeacher)
   // Delete teacher by id
   .delete(teacherValidator.idValidator, validatorResults, deleteTeacher)
   .patch(teacherValidator.idValidator, validatorResults, updateTeacher);

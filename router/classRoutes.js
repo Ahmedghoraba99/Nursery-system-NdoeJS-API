@@ -1,8 +1,5 @@
 const express = require("express");
 const classValidator = require("../middleware/classValidator");
-const logger = require("../middleware/logger");
-const errorHandler = require("../middleware/errorHandler");
-const notFound = require("../middleware/notFound");
 const isAuthorized = require("../middleware/authorized").isAdmin;
 const {
   getAllClasses,
@@ -14,41 +11,40 @@ const {
   getClassSupervisorInfo,
 } = require("../controller/classController");
 const validatorResults = require("../middleware/validatorResults");
+const {
+  isAdmin,
+  isTeacher,
+  sameClassSupervisor,
+  sameID,
+} = require("../middleware/authorized");
 const router = express.Router();
+router.use("/class", isTeacher);
 
 router
   .route("/class")
-  .get(logger, isAuthorized, getAllClasses, notFound)
+  .get(isAdmin, getAllClasses)
   .post(
-    logger,
-    isAuthorized,
+    isAdmin,
     classValidator.insertClassValidator,
     validatorResults,
-    addClass,
-    notFound,
-    errorHandler
+    addClass
   )
   .patch(
-    logger,
-    isAuthorized,
+    isAdmin,
     classValidator.updateClassValidator,
     validatorResults,
-    updateClass,
-    notFound,
-    errorHandler
+    updateClass
   );
 
 router.get(
   "/class/children/:id",
-  logger,
-  isAuthorized,
+  sameClassSupervisor,
   classValidator.idValidator,
   getClassChildrenInfo
 );
 router.get(
   "/class/teacher/:id",
-  logger,
-  isAuthorized,
+  sameClassSupervisor,
   classValidator.idValidator,
   getClassSupervisorInfo
 );
@@ -56,22 +52,12 @@ router.get(
 router
   .route("/class/:id")
   .get(
-    logger,
-    isAuthorized,
+    isTeacher,
+    sameClassSupervisor,
     classValidator.idValidator,
     validatorResults,
-    getClass,
-    notFound,
-    errorHandler
+    getClass
   )
-  .delete(
-    logger,
-    isAuthorized,
-    classValidator.idValidator,
-    validatorResults,
-    deleteClass,
-    notFound,
-    errorHandler
-  );
+  .delete(isAdmin, classValidator.idValidator, validatorResults, deleteClass);
 
 module.exports = router;
