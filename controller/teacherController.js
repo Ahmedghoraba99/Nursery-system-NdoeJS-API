@@ -1,6 +1,8 @@
 const teachers = require("../model/teacherSchema");
 const bcrypt = require("bcrypt");
 const salt = parseInt(process.env.SALT);
+const fs = require("fs");
+const path = require("path");
 const getAllTeachers = (_req, res, next) => {
   teachers
     .find({})
@@ -66,10 +68,17 @@ const updateTeacher = (req, res, next) => {
     });
 };
 
-const deleteTeacher = (req, res, next) => {
-  teachers
-    .deleteOne({ _id: req.params.id })
-    .then(() => {
+const deleteTeacher = async (req, res, next) => {
+  const deletedTeacher = teachers
+    .findByIdAndDelete({ _id: req.params.id })
+    .then((data) => {
+      try {
+        // delete the image
+        fs.unlinkSync(path.join(__dirname, "../", data.image));
+      } catch (error) {
+        next(error);
+      }
+      console.log("dataaa", data);
       res.status(200).json({
         status: "success",
         message: "Teacher deleted successfully",
